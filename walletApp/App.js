@@ -177,7 +177,7 @@ export default class App extends React.Component{
           {this.state.initialArr.map(info => {
             return(
               <View style={styles.page}>
-                <View style={{opacity: info.greyed?0.3:1}}>
+                <View style={{opacity: info.greyed?0.3:1, backgroundColor: '#0C365A'}}>
                   <Button style={styles.button} onPress={async()=>{await this.toggleShow(info)}}>
                     <Text style={{alignSelf:'center', color: '#01D167', fontSize: 10}}>
                       {!info.show && "Show card number"}
@@ -206,7 +206,7 @@ export default class App extends React.Component{
                     </Text>
                   </Card>
                 </View>
-                <View>
+                <View style={{backgroundColor: '#0C365A', paddingBottom: 20}}>
                   <View style={styles.options}>
                       <TouchableOpacity onPress={async()=>{await this.deleteItem(info.name)}}>
                         <Image style={{alignSelf: 'center'}} source={require('./assets/Del.png')}></Image>
@@ -217,11 +217,22 @@ export default class App extends React.Component{
                         {!info.greyed && <Text style={styles.text}>Freeze Card</Text>}
                         {info.greyed && <Text style={styles.text}>UnFreeze Card</Text>}
                       </TouchableOpacity>
-                  </View>
-                  <View style={{opacity: info.greyed?0.3:1}}>
-                    <Text style={styles.text}>{info.number}</Text>
+                      <Text style={styles.text}>{"<<--"} Scroll {"-->>"}</Text>
                   </View>
                 </View>
+                <ScrollView>
+                  <View style={{opacity: info.greyed?0.3:1, alignItems: 'center'}}>
+                  <Text style={styles.text_black}>Transaction 1: Berkley</Text>
+                  <Text style={styles.text_black}>Transaction 2: Hamleys</Text>
+                  <Text style={styles.text_black}>Transaction 3: Hamleys</Text>
+                  <Text style={styles.text_black}>Transaction 4: Hamleys</Text>
+                  <Text style={styles.text_black}>Transaction 5: Hamleys</Text>
+                  <Text style={styles.text_black}>Transaction 6: Hamleys</Text>
+                  <Text style={styles.text_black}>Transaction 7: Hamleys</Text>
+                  <Text style={styles.text_black}>Transaction 8: Hamleys</Text>
+                  <Text style={styles.text_black}>Transaction 9: Hamleys</Text>
+                  </View>
+                </ScrollView>
               </View>
             );
             })}  
@@ -236,7 +247,7 @@ const styles = StyleSheet.create({
     flex: 2, 
     flexDirection: 'column',
     width: Dimensions.get('window').width,
-    backgroundColor: '#0C365A',
+    // backgroundColor: '#0C365A',
     alignItems: 'stretch',
   },
   container: {
@@ -263,6 +274,11 @@ const styles = StyleSheet.create({
     color: 'white',
     paddingTop: 50,
   },
+  text_black: {
+    color: 'black',
+    paddingTop: 20,
+    fontSize: 15
+  },
   dollar: {
     backgroundColor: '#01D167',
     borderRadius: 5,
@@ -287,7 +303,8 @@ const styles = StyleSheet.create({
   }, 
   options: {
     flexDirection: 'row',
-    justifyContent: 'space-evenly'
+    justifyContent: 'space-evenly',
+    marginTop: 20
   },
   button: {
     color: '#01D167',
