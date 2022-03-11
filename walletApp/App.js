@@ -2,7 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { StyleSheet, Text, View, Image, ScrollView, Dimensions, TouchableOpacity} from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { Card } from 'react-native-paper';
+import { Button, Card } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // initialArr = [
@@ -24,7 +24,8 @@ const card1 = {
   Thru: "12/20",
   CVV: 444,
   type: "Visa", 
-  greyed: false
+  greyed: false,
+  show: false
 }
 const card2 = {
   name: "card 2",
@@ -32,7 +33,8 @@ const card2 = {
   Thru: "13/20",
   CVV: 445,
   type: "MasterCard",
-  greyed: false
+  greyed: false,
+  show: false
 }
 
 const storeItem = async () => {
@@ -133,6 +135,26 @@ export default class App extends React.Component{
     }
   }
 
+  toggleShow = async(item) => {
+    try {
+      item.show = !item.show;
+      await AsyncStorage.mergeItem(item.name, JSON.stringify({show: item.show}));
+      var newlist = [];
+      this.state.initialArr.map((value) => {
+        if (value.name == item.name) {
+          value.show = item.show
+        }
+        newlist.push(value);
+      });
+      this.setState({
+        initialArr: newlist
+      })
+      console.log(this.state.initialArr)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
   render () {
     return (
         <SafeAreaView style={styles.page}>
@@ -145,7 +167,7 @@ export default class App extends React.Component{
             </View>
             <View style = {styles.imageView}>
                 <Image source={require('./assets/Logo.png')}></Image>
-                <TouchableOpacity onPress={async()=>{await this.setItem({name:"", number: 1234123412356789,Thru: "14/20",CVV: 424,type: "Visa", greyed: false})}}>
+                <TouchableOpacity onPress={async()=>{await this.setItem({name:"", number: 5678993412356789,Thru: "14/20",CVV: 424,type: "Visa", greyed: false})}}>
                   <Text style={styles.text_card}> New Card </Text>
                 </TouchableOpacity>
             </View>
@@ -155,22 +177,50 @@ export default class App extends React.Component{
           {this.state.initialArr.map(info => {
             return(
               <View style={styles.page}>
-                <View>
+                <View style={{opacity: info.greyed?0.3:1}}>
+                  <Button style={styles.button} onPress={async()=>{await this.toggleShow(info)}}>
+                    <Text style={{alignSelf:'center', color: '#01D167', fontSize: 10}}>
+                      {!info.show && "Show card number"}
+                      {info.show && "Hide card number"}
+                    </Text>
+                  </Button>
                   <Card style={styles.card}>
+                    <Image style={{alignSelf: 'flex-end'}} source={require('./assets/CardLogo.png')}></Image>
+                    <Text style={styles.money}>
+                      Mark Henry
+                    </Text>
                     <Text style={styles.text}>
-                      {info.name}
+                      {info.show && parseInt(info.number/1000000000000)}    {info.show && parseInt(info.number/100000000)%10000}    {info.show && parseInt(info.number/10000)%10000}    {info.show && parseInt(info.number%10000)}
+                      {!info.show && "****"}    {!info.show && "****"}    {!info.show && "****"}    {!info.show && parseInt(info.number%10000)}
+                    </Text>
+                    <View style={{flexDirection: 'row'}}>
+                    <Text style={styles.text_thru}>
+                      Thru: {info.Thru}
+                    </Text>
+                    <Text style={styles.text}>
+                      CVV: * * *
+                    </Text>
+                    </View>
+                    <Text style={styles.text_type}>
+                      {info.type}
                     </Text>
                   </Card>
                 </View>
                 <View>
-                  <TouchableOpacity onPress={async()=>{await this.deleteItem(info.name)}}>
-                    <Text style={styles.text}>Delete Card</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={async()=>{await this.toggleFreeze(info)}}>
-                  {!info.greyed && <Text style={styles.text}>Freeze Card</Text>}
-                  {info.greyed && <Text style={styles.text}>UnFreeze Card</Text>}
-                  </TouchableOpacity>
-                  <Text style={styles.text}>{info.number}</Text>
+                  <View style={styles.options}>
+                      <TouchableOpacity onPress={async()=>{await this.deleteItem(info.name)}}>
+                        <Image style={{alignSelf: 'center'}} source={require('./assets/Del.png')}></Image>
+                        <Text style={styles.text}>Delete Card</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={async()=>{await this.toggleFreeze(info)}}>
+                        <Image style={{alignSelf: 'center'}} source={require('./assets/Freeze.png')}></Image>
+                        {!info.greyed && <Text style={styles.text}>Freeze Card</Text>}
+                        {info.greyed && <Text style={styles.text}>UnFreeze Card</Text>}
+                      </TouchableOpacity>
+                  </View>
+                  <View style={{opacity: info.greyed?0.3:1}}>
+                    <Text style={styles.text}>{info.number}</Text>
+                  </View>
                 </View>
               </View>
             );
@@ -200,6 +250,11 @@ const styles = StyleSheet.create({
     color: 'white',
     paddingTop: 20
   },
+  text_thru: {
+    color: 'white',
+    paddingTop: 20,
+    paddingRight: 60
+  },
   text_body: {
     color: 'white',
     paddingTop: 10
@@ -213,13 +268,16 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   }, 
   money: {
+    color: 'white',
     fontSize: 20,
     fontWeight: 'bold'
   },
   card: {
     backgroundColor: '#01D167',
     color: 'white',
-    margin: 20, 
+    marginLeft: 20, 
+    marginBottom: 20,
+    marginRight: 20,
     padding: 10
   },
   imageView: {
@@ -227,4 +285,22 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'flex-end',
   }, 
+  options: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly'
+  },
+  button: {
+    color: '#01D167',
+    backgroundColor: 'white',
+    borderTopLeftRadius : 10,
+    borderTopRightRadius : 10,
+    alignSelf: 'flex-end',
+    marginRight: 20
+  },
+  text_type: {
+    fontSize: 30,
+    fontWeight: 'bold',
+    color: 'white',
+    alignSelf: 'flex-end'
+  }
 });
