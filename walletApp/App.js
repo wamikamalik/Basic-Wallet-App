@@ -21,7 +21,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const card1 = {
   name: "card 1",
   number: 1234123412341234,
-  Thru: "12/20",
+  Thru: "12/23",
   CVV: 444,
   type: "Visa", 
   greyed: false,
@@ -30,7 +30,7 @@ const card1 = {
 const card2 = {
   name: "card 2",
   number: 1234123412345678,
-  Thru: "13/20",
+  Thru: "11/24",
   CVV: 445,
   type: "MasterCard",
   greyed: false,
@@ -60,8 +60,10 @@ export default class App extends React.Component{
   async componentWillMount() {
     try {
       console.disableYellowBox = true;
-      // await storeItem()
       keys = await AsyncStorage.getAllKeys()
+      if(keys.length == 0) {
+        await storeItem()
+      }
       keys.map(key => {
         console.log(key)
         this.getItem(key)
@@ -170,7 +172,7 @@ export default class App extends React.Component{
     if(this.state.number == null || this.state.thru == null || this.state.CVV == null) {
       alert("Details are missing. No card added.");
     } else {
-      if(this.state.number.toString().length!=16) {
+      if(this.state.number.toString().match(/^[0-9]+$/)==null || this.state.number.toString().length!=16) {
         alert("Card number should have 16 digits. No card added.")
       } else if(this.state.thru.toString().split("/").length!=2) {
         alert("Invalid Thru. No card added.")
@@ -184,7 +186,7 @@ export default class App extends React.Component{
         if(parseInt(this.state.thru.toString().split("/")[0]) < new Date().getMonth() + 1) {
           alert("Invalid Thru month. No card added.")
         }
-      } else if(this.state.CVV.toString().length!=3) {
+      } else if(this.state.CVV.toString().match(/^[0-9]+$/)==null || this.state.CVV.toString().length!=3) {
         alert("Invalid CVV. No card added.")
       } else {
         var item = {
