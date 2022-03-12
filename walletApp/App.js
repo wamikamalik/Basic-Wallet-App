@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { StyleSheet, Text, View, Image, ScrollView, Dimensions, TouchableOpacity} from 'react-native';
+import { StyleSheet, Text, View, Image, ScrollView, Dimensions, TouchableOpacity, Modal, TextInput} from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Card } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -49,11 +49,17 @@ const storeItem = async () => {
 
 export default class App extends React.Component{
   state = {
-    initialArr: []
+    initialArr: [],
+    number: null,
+    modal: false,
+    thru: null,
+    CVV: null,
+    type: "VISA"
   }
 
   async componentWillMount() {
     try {
+      console.disableYellowBox = true;
       // await storeItem()
       keys = await AsyncStorage.getAllKeys()
       keys.map(key => {
@@ -86,7 +92,7 @@ export default class App extends React.Component{
       if(this.state.initialArr.length == 0) {
         item.name = "card 1"
       } else {
-        last_name = this.state.initialArr.slice(-1)[0].name;
+        var last_name = this.state.initialArr.slice(-1)[0].name;
         console.log(last_name)
         item.name = "card " + (parseInt(last_name.match(/\d/g)) + 1).toString();
       }
@@ -155,6 +161,48 @@ export default class App extends React.Component{
     }
   }
 
+  toggleModal = () => {
+    this.setState({modal: !this.state.modal})
+  };
+
+  addCard = () => {
+    this.toggleModal();
+    if(this.state.number == null || this.state.thru == null || this.state.CVV == null) {
+      alert("Details are missing. No card added.");
+    } else {
+      if(this.state.number.toString().length!=16) {
+        alert("Card number should have 16 digits. No card added.")
+      } else if(this.state.thru.toString().split("/").length!=2) {
+        alert("Invalid Thru. No card added.")
+      } else if(this.state.thru.toString().split("/")[0].match(/^[0-9]+$/)==null || parseInt(this.state.thru.toString().split("/")[0]) > 12) {
+        alert("Invalid Thru month. No card added.")
+      } else if(this.state.thru.toString().split("/")[1].length!=2) {
+        alert("Invalid Thru year. No card added.")
+      } else if(parseInt(this.state.thru.toString().split("/")[1]) < new Date().getFullYear()%100) {
+        alert("Invalid Thru year. No card added.")
+      } else if(parseInt(this.state.thru.toString().split("/")[1]) == new Date().getFullYear()%100) {
+        if(parseInt(this.state.thru.toString().split("/")[0]) < new Date().getMonth() + 1) {
+          alert("Invalid Thru month. No card added.")
+        }
+      } else if(this.state.CVV.toString().length!=3) {
+        alert("Invalid CVV. No card added.")
+      } else {
+        var item = {
+          name: null,
+          number: this.state.number,
+          Thru: this.state.thru,
+          CVV: this.state.CVV,
+          type: this.state.type, 
+          greyed: false,
+          show: false
+        };
+        this.setItem(item);
+        alert("Card added.");
+      }
+      this.setState({number: null, thru: null, CVV: null})
+    }
+  }
+
   render () {
     return (
         <SafeAreaView style={styles.page}>
@@ -167,8 +215,33 @@ export default class App extends React.Component{
             </View>
             <View style = {styles.imageView}>
                 <Image source={require('./assets/Logo.png')}></Image>
-                <TouchableOpacity onPress={async()=>{await this.setItem({name:"", number: 5678993412356789,Thru: "14/20",CVV: 424,type: "Visa", greyed: false})}}>
+                <TouchableOpacity onPress={this.toggleModal}>
+                  {/* modal source: https://www.geeksforgeeks.org/how-to-create-custom-dialog-box-with-text-input-react-native/ */}
+                  <Modal animationType="slide" transparent visible={this.state.modal} presentationStyle="overFullScreen" onDismiss={this.toggleModal}>
+                    <View style={styles.viewWrapper}>
+                      <View style={styles.modalView}>
+                          <Text style={styles.text_black}> Card Number </Text>
+                          <TextInput placeholder="Enter Card Number..." value={this.state.number} style={styles.textInput} 
+                            onChangeText={(value) => this.setState({number: value})} />
+                          <Text style={styles.text_black}> Thru </Text>
+                          <TextInput placeholder="Enter Thru..." value={this.state.thru} style={styles.textInput} 
+                            onChangeText={(value) => this.setState({thru: value})} />
+                          <Text style={styles.text_black}> CVV </Text>
+                          <TextInput placeholder="Enter CVV..." value={this.state.CVV} style={styles.textInput} 
+                            onChangeText={(value) => this.setState({CVV: value})} />
+                          <Text style={styles.text_black}> Type </Text>
+                          <TextInput placeholder="Enter Card Type (Visa/MasterCard/etc)..." value={this.state.type} style={styles.textInput} 
+                            onChangeText={(value) => this.setState({type: value})} />  
+                          <Button style={styles.add_button} onPress={this.addCard} >
+                            <Text style={styles.text}> Done </Text>
+                          </Button>
+                      </View>
+                    </View>
+                  </Modal>
+                  <View style={{flexDirection: 'row'}}>
+                  <Image style={styles.add} source={require('./assets/box.png')}></Image>
                   <Text style={styles.text_card}> New Card </Text>
+                  </View>
                 </TouchableOpacity>
             </View>
           </View>
@@ -314,10 +387,48 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
     marginRight: 20
   },
+  add_button: {
+    color: 'white',
+    backgroundColor: '#01D167',
+    borderRadius : 10,
+  },
   text_type: {
     fontSize: 30,
     fontWeight: 'bold',
     color: 'white',
     alignSelf: 'flex-end'
-  }
+  },
+  add: {
+    marginTop: 53
+  }, 
+  //Source: https://www.geeksforgeeks.org/how-to-create-custom-dialog-box-with-text-input-react-native/
+  viewWrapper: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.2)",
+  },
+  modalView: {
+    alignItems: "center",
+    justifyContent: "center",
+    position: "absolute",
+    top: "30%",
+    left: "50%",
+    elevation: 5,
+    transform: [{ translateX: -(Dimensions.get("window").width * 0.4) }, 
+                { translateY: -90 }],
+    height: 500,
+    width: Dimensions.get("window").width * 0.8,
+    backgroundColor: "#fff",
+    borderRadius: 7,
+  },
+  textInput: {
+    width: "80%",
+    borderRadius: 5,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderColor: "rgba(0, 0, 0, 0.2)",
+    borderWidth: 1,
+    marginBottom: 8,
+  },
 });
