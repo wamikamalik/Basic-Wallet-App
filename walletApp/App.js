@@ -224,7 +224,7 @@ export default class App extends React.Component{
                           <TextInput placeholder="Enter Card Number..." value={this.state.number} style={styles.textInput} 
                             onChangeText={(value) => this.setState({number: value})} />
                           <Text style={styles.text_black}> Thru </Text>
-                          <TextInput placeholder="Enter Thru..." value={this.state.thru} style={styles.textInput} 
+                          <TextInput placeholder="Enter Thru (MM/YY)..." value={this.state.thru} style={styles.textInput} 
                             onChangeText={(value) => this.setState({thru: value})} />
                           <Text style={styles.text_black}> CVV </Text>
                           <TextInput placeholder="Enter CVV..." value={this.state.CVV} style={styles.textInput} 
