@@ -1,6 +1,10 @@
 # Basic-Wallet-App
 A basic app for the Aspire Internship code challenge
 
+<p align="center">
+<img src="https://user-images.githubusercontent.com/60306071/158048803-9b24fafc-90b5-4923-876d-13ea85bde75c.png" width="200" align="center" />
+</p>
+
 ## Running the application
 This application has not been deployed yet. To run the application in development mode:
 1. Clone this repository: https://github.com/wamikamalik/Basic-Wallet-App.git
